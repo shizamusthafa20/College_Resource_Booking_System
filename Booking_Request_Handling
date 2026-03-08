@@ -100,15 +100,15 @@ def process_request(queue):
     print(f"\n  Processing Request #{request['id']}  →  {request['name']} | {resource} @ {time_slot} on {request['date']}")
 
     if result is None:
-        print("  ✖  Invalid resource or time slot. Request dropped.")
+        print("   Invalid resource or time slot. Request dropped.")
     elif result:
         # Mark as booked in the status grid
         r_idx = next(i for i, r in enumerate(resources) if r.lower() == resource.lower())
         t_idx = time_slots.index(time_slot)
         status[r_idx][t_idx] = "Booked"
-        print(f"  ✔  CONFIRMED  –  {resource} has been booked for {time_slot}")
+        print(f"   CONFIRMED  –  {resource} has been booked for {time_slot}")
     else:
-        print(f"  ✖  REJECTED   –  {resource} is already booked at {time_slot}")
+        print(f"   REJECTED   –  {resource} is already booked at {time_slot}")
 
         # Suggest alternatives (same helper as friend's module)
         r_idx = next(i for i, r in enumerate(resources) if r.lower() == resource.lower())
@@ -142,20 +142,20 @@ def add_request_menu(queue):
     valid_t = time_slot in time_slots
 
     if not name:
-        print("  ✖  Name cannot be empty. Request not added.")
+        print("  Name cannot be empty. Request not added.")
         return
     if not date:
-        print("  ✖  Date cannot be empty. Request not added.")
+        print("  Date cannot be empty. Request not added.")
         return
     if not valid_r:
-        print("  ✖  Resource not found. Request not added.")
+        print("  Resource not found. Request not added.")
         return
     if not valid_t:
-        print("  ✖  Invalid time slot. Request not added.")
+        print("  Invalid time slot. Request not added.")
         return
 
     ticket = queue.enqueue(name, resource, time_slot, date)
-    print(f"  ✔  Request #{ticket} added to queue  ({name} → {resource} @ {time_slot} on {date})")
+    print(f"   Request #{ticket} added to queue  ({name} → {resource} @ {time_slot} on {date})")
 
 
 ## ---------- MAIN PROGRAM ------------------------------------
