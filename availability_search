@@ -1,1 +1,52 @@
+# College Resource Availability Search System
 
+resources = ["Lab1", "Lab2", "Auditorium", "Playground"]
+
+time_slots = ["9-10", "10-11", "11-12", "4-5"]
+
+status = [
+    ["Booked", "Available", "Available", "Booked"],
+    ["Available", "Available", "Booked", "Available"],
+    ["Booked", "Booked", "Available", "Available"],
+    ["Available", "Booked", "Available", "Available"]
+]
+
+print("Resources available in college:")
+
+for r in resources:
+    print(r)
+
+resource_name = input("\nEnter resource name: ").strip()
+time = input("Enter desired time slot: ").strip()
+
+found_resource = False
+found_time = False
+
+for i in range(len(resources)):
+
+    if resources[i].lower() == resource_name.lower():
+
+        found_resource = True
+
+        for j in range(len(time_slots)):
+
+            if time_slots[j] == time:
+
+                found_time = True
+
+                if status[i][j] == "Available":
+                    print("\nResource is AVAILABLE at this time")
+                else:
+                    print("\nThis slot is BOOKED")
+
+                    print("\nSuggested available time slots:")
+
+                    for k in range(len(time_slots)):
+                        if status[i][k] == "Available":
+                            print(time_slots[k])
+
+if not found_resource:
+    print("\nResource not found")
+
+elif not found_time:
+    print("\nInvalid time slot")
