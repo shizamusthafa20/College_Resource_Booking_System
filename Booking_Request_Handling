@@ -25,13 +25,15 @@ class BookingQueue:
         self._request_id = 1      # auto-incrementing ticket number
 
     # ── Enqueue ──────────────────────────────────────────────
-    def enqueue(self, resource, time_slot):
+    def enqueue(self, name, resource, time_slot, date):
         """Add a new booking request to the rear of the queue."""
         request = {
-            "id"       : self._request_id,
-            "resource" : resource,
-            "time_slot": time_slot,
-            "status"   : "Pending",
+            "id"        : self._request_id,
+            "name"      : name,
+            "resource"  : resource,
+            "time_slot" : time_slot,
+            "date"      : date,
+            "status"    : "Pending",
         }
         self._queue.append(request)
         self._request_id += 1
@@ -63,10 +65,10 @@ class BookingQueue:
         if self.is_empty():
             print("  [ Queue is empty ]")
             return
-        print(f"  {'ID':<6} {'Resource':<14} {'Time Slot':<10} {'Status'}")
-        print(f"  {'-'*6} {'-'*14} {'-'*10} {'-'*10}")
+        print(f"  {'ID':<6} {'Name':<16} {'Resource':<14} {'Time Slot':<10} {'Date':<12} {'Status'}")
+        print(f"  {'-'*6} {'-'*16} {'-'*14} {'-'*10} {'-'*12} {'-'*10}")
         for req in self._queue:
-            print(f"  {req['id']:<6} {req['resource']:<14} {req['time_slot']:<10} {req['status']}")
+            print(f"  {req['id']:<6} {req['name']:<16} {req['resource']:<14} {req['time_slot']:<10} {req['date']:<12} {req['status']}")
 
 
 ## ---------- AVAILABILITY CHECK (reuses friend's logic) ------
@@ -95,7 +97,7 @@ def process_request(queue):
     time_slot = request["time_slot"]
     result    = check_availability(resource, time_slot)
 
-    print(f"\n  Processing Request #{request['id']}  →  {resource} @ {time_slot}")
+    print(f"\n  Processing Request #{request['id']}  →  {request['name']} | {resource} @ {time_slot} on {request['date']}")
 
     if result is None:
         print("  ✖  Invalid resource or time slot. Request dropped.")
@@ -130,13 +132,21 @@ def print_resources():
 
 def add_request_menu(queue):
     print_resources()
-    resource  = input("\n  Enter resource name : ").strip()
-    time_slot = input("  Enter time slot     : ").strip()
+    name      = input("\n  Enter your name         : ").strip()
+    resource  = input("  Enter resource name     : ").strip()
+    time_slot = input("  Enter time slot         : ").strip()
+    date      = input("  Enter date (DD-MM-YYYY) : ").strip()
 
     # Basic validation before enqueueing
     valid_r = any(r.lower() == resource.lower() for r in resources)
     valid_t = time_slot in time_slots
 
+    if not name:
+        print("  ✖  Name cannot be empty. Request not added.")
+        return
+    if not date:
+        print("  ✖  Date cannot be empty. Request not added.")
+        return
     if not valid_r:
         print("  ✖  Resource not found. Request not added.")
         return
@@ -144,8 +154,8 @@ def add_request_menu(queue):
         print("  ✖  Invalid time slot. Request not added.")
         return
 
-    ticket = queue.enqueue(resource, time_slot)
-    print(f"  ✔  Request #{ticket} added to queue  ({resource} @ {time_slot})")
+    ticket = queue.enqueue(name, resource, time_slot, date)
+    print(f"  ✔  Request #{ticket} added to queue  ({name} → {resource} @ {time_slot} on {date})")
 
 
 ## ---------- MAIN PROGRAM ------------------------------------
@@ -173,7 +183,7 @@ def main():
             front = queue.peek()
             if front:
                 print(f"\n  Next in line → Request #{front['id']}: "
-                      f"{front['resource']} @ {front['time_slot']}")
+                      f"{front['name']} | {front['resource']} @ {front['time_slot']} on {front['date']}")
             else:
                 print("\n  Queue is empty.")
 
