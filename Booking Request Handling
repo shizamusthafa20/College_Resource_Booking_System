@@ -1,0 +1,193 @@
+## ============================================================
+##  CAMPUS PORTAL - BOOKING REQUEST HANDLER
+##  Module  : Booking Request Handling
+##  Concept : Queue (FIFO - First In, First Out)
+## ============================================================
+
+## ---------- DATA ----------
+resources  = ["Lab1", "Lab2", "Auditorium", "Playground"]
+time_slots = ["9-10", "10-11", "11-12", "4-5"]
+
+# 2D status array (same as friend's module)
+status = [
+    ["Booked",     "Available", "Available", "Booked"    ],   # Lab1
+    ["Available",  "Available", "Booked",    "Available" ],   # Lab2
+    ["Booked",     "Booked",    "Available", "Available" ],   # Auditorium
+    ["Available",  "Booked",    "Available", "Available" ],   # Playground
+]
+
+## ---------- QUEUE IMPLEMENTATION ----------
+class BookingQueue:
+    """A simple FIFO queue for booking requests."""
+
+    def __init__(self):
+        self._queue = []          # internal list acting as the queue
+        self._request_id = 1      # auto-incrementing ticket number
+
+    # ── Enqueue ──────────────────────────────────────────────
+    def enqueue(self, resource, time_slot):
+        """Add a new booking request to the rear of the queue."""
+        request = {
+            "id"       : self._request_id,
+            "resource" : resource,
+            "time_slot": time_slot,
+            "status"   : "Pending",
+        }
+        self._queue.append(request)
+        self._request_id += 1
+        return request["id"]
+
+    # ── Dequeue ──────────────────────────────────────────────
+    def dequeue(self):
+        """Remove and return the request at the front of the queue."""
+        if self.is_empty():
+            return None
+        return self._queue.pop(0)
+
+    # ── Peek ─────────────────────────────────────────────────
+    def peek(self):
+        """View the front request without removing it."""
+        if self.is_empty():
+            return None
+        return self._queue[0]
+
+    # ── Helpers ──────────────────────────────────────────────
+    def is_empty(self):
+        return len(self._queue) == 0
+
+    def size(self):
+        return len(self._queue)
+
+    def display(self):
+        """Pretty-print all pending requests in the queue."""
+        if self.is_empty():
+            print("  [ Queue is empty ]")
+            return
+        print(f"  {'ID':<6} {'Resource':<14} {'Time Slot':<10} {'Status'}")
+        print(f"  {'-'*6} {'-'*14} {'-'*10} {'-'*10}")
+        for req in self._queue:
+            print(f"  {req['id']:<6} {req['resource']:<14} {req['time_slot']:<10} {req['status']}")
+
+
+## ---------- AVAILABILITY CHECK (reuses friend's logic) ------
+def check_availability(resource, time_slot):
+    """Return True if the resource is available at the given time slot."""
+    for i, res in enumerate(resources):
+        if res.lower() == resource.lower():
+            for j, ts in enumerate(time_slots):
+                if ts == time_slot:
+                    return status[i][j] == "Available"
+    return None  # resource or time slot not found
+
+
+## ---------- PROCESS A REQUEST --------------------------------
+def process_request(queue):
+    """
+    Dequeue the front request and check actual availability.
+    Updates the status grid if the booking is confirmed.
+    """
+    request = queue.dequeue()
+    if request is None:
+        print("\n  No requests to process.")
+        return
+
+    resource  = request["resource"]
+    time_slot = request["time_slot"]
+    result    = check_availability(resource, time_slot)
+
+    print(f"\n  Processing Request #{request['id']}  →  {resource} @ {time_slot}")
+
+    if result is None:
+        print("  ✖  Invalid resource or time slot. Request dropped.")
+    elif result:
+        # Mark as booked in the status grid
+        r_idx = next(i for i, r in enumerate(resources) if r.lower() == resource.lower())
+        t_idx = time_slots.index(time_slot)
+        status[r_idx][t_idx] = "Booked"
+        print(f"  ✔  CONFIRMED  –  {resource} has been booked for {time_slot}")
+    else:
+        print(f"  ✖  REJECTED   –  {resource} is already booked at {time_slot}")
+
+        # Suggest alternatives (same helper as friend's module)
+        r_idx = next(i for i, r in enumerate(resources) if r.lower() == resource.lower())
+        alts  = [time_slots[j] for j in range(len(time_slots)) if status[r_idx][j] == "Available"]
+        if alts:
+            print(f"     Available slots for {resource}: {', '.join(alts)}")
+        else:
+            print(f"     No available slots for {resource} today.")
+
+
+## ---------- MENU HELPERS ------------------------------------
+def print_header():
+    print("\n" + "=" * 52)
+    print("   // CAMPUS PORTAL")
+    print("   BOOKING REQUEST HANDLER  (Queue Module)")
+    print("=" * 52)
+
+def print_resources():
+    print("\n  Resources : " + ", ".join(resources))
+    print("  Time Slots: " + ", ".join(time_slots))
+
+def add_request_menu(queue):
+    print_resources()
+    resource  = input("\n  Enter resource name : ").strip()
+    time_slot = input("  Enter time slot     : ").strip()
+
+    # Basic validation before enqueueing
+    valid_r = any(r.lower() == resource.lower() for r in resources)
+    valid_t = time_slot in time_slots
+
+    if not valid_r:
+        print("  ✖  Resource not found. Request not added.")
+        return
+    if not valid_t:
+        print("  ✖  Invalid time slot. Request not added.")
+        return
+
+    ticket = queue.enqueue(resource, time_slot)
+    print(f"  ✔  Request #{ticket} added to queue  ({resource} @ {time_slot})")
+
+
+## ---------- MAIN PROGRAM ------------------------------------
+def main():
+    queue = BookingQueue()
+
+    while True:
+        print_header()
+        print(f"\n  Queue size : {queue.size()} pending request(s)\n")
+        print("  1. Add booking request")
+        print("  2. Process next request (dequeue)")
+        print("  3. View front request (peek)")
+        print("  4. View all pending requests")
+        print("  5. Exit")
+
+        choice = input("\n  Enter choice: ").strip()
+
+        if choice == "1":
+            add_request_menu(queue)
+
+        elif choice == "2":
+            process_request(queue)
+
+        elif choice == "3":
+            front = queue.peek()
+            if front:
+                print(f"\n  Next in line → Request #{front['id']}: "
+                      f"{front['resource']} @ {front['time_slot']}")
+            else:
+                print("\n  Queue is empty.")
+
+        elif choice == "4":
+            print("\n  ── Pending Booking Requests ──")
+            queue.display()
+
+        elif choice == "5":
+            print("\n  Exiting Booking Handler. Goodbye!\n")
+            break
+
+        else:
+            print("  Invalid choice. Try again.")
+
+
+if __name__ == "__main__":
+    main()
