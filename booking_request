@@ -1,10 +1,10 @@
-## ============================================================
+
 ##  CAMPUS PORTAL - BOOKING REQUEST HANDLER
 ##  Module  : Booking Request Handling
 ##  Concept : Queue (FIFO - First In, First Out)
-## ============================================================
 
-## ---------- DATA ----------
+
+##  DATA 
 resources  = ["Lab1", "Lab2", "Auditorium", "Playground"]
 time_slots = ["9-10", "10-11", "11-12", "4-5"]
 
@@ -16,7 +16,7 @@ status = [
     ["Available",  "Booked",    "Available", "Available" ],   # Playground
 ]
 
-## ---------- QUEUE IMPLEMENTATION ----------
+## QUEUE IMPLEMENTATION
 class BookingQueue:
     """A simple FIFO queue for booking requests."""
 
@@ -24,7 +24,7 @@ class BookingQueue:
         self._queue = []          # internal list acting as the queue
         self._request_id = 1      # auto-incrementing ticket number
 
-    # ── Enqueue ──────────────────────────────────────────────
+    #  Enqueue
     def enqueue(self, name, resource, time_slot, date):
         """Add a new booking request to the rear of the queue."""
         request = {
@@ -39,21 +39,21 @@ class BookingQueue:
         self._request_id += 1
         return request["id"]
 
-    # ── Dequeue ──────────────────────────────────────────────
+    #  Dequeue 
     def dequeue(self):
         """Remove and return the request at the front of the queue."""
         if self.is_empty():
             return None
         return self._queue.pop(0)
 
-    # ── Peek ─────────────────────────────────────────────────
+    #  Peek 
     def peek(self):
         """View the front request without removing it."""
         if self.is_empty():
             return None
         return self._queue[0]
 
-    # ── Helpers ──────────────────────────────────────────────
+    #  Helpers 
     def is_empty(self):
         return len(self._queue) == 0
 
@@ -71,7 +71,7 @@ class BookingQueue:
             print(f"  {req['id']:<6} {req['name']:<16} {req['resource']:<14} {req['time_slot']:<10} {req['date']:<12} {req['status']}")
 
 
-## ---------- AVAILABILITY CHECK (reuses friend's logic) ------
+##  AVAILABILITY CHECK 
 def check_availability(resource, time_slot):
     """Return True if the resource is available at the given time slot."""
     for i, res in enumerate(resources):
@@ -82,7 +82,7 @@ def check_availability(resource, time_slot):
     return None  # resource or time slot not found
 
 
-## ---------- PROCESS A REQUEST --------------------------------
+## PROCESS A REQUEST 
 def process_request(queue):
     """
     Dequeue the front request and check actual availability.
@@ -110,7 +110,7 @@ def process_request(queue):
     else:
         print(f"   REJECTED   –  {resource} is already booked at {time_slot}")
 
-        # Suggest alternatives (same helper as friend's module)
+        # Suggest alternatives 
         r_idx = next(i for i, r in enumerate(resources) if r.lower() == resource.lower())
         alts  = [time_slots[j] for j in range(len(time_slots)) if status[r_idx][j] == "Available"]
         if alts:
@@ -119,7 +119,7 @@ def process_request(queue):
             print(f"     No available slots for {resource} today.")
 
 
-## ---------- MENU HELPERS ------------------------------------
+##  MENU HELPERS 
 def print_header():
     print("\n" + "=" * 52)
     print("   // CAMPUS PORTAL")
@@ -158,7 +158,7 @@ def add_request_menu(queue):
     print(f"   Request #{ticket} added to queue  ({name} → {resource} @ {time_slot} on {date})")
 
 
-## ---------- MAIN PROGRAM ------------------------------------
+## MAIN PROGRAM 
 def main():
     queue = BookingQueue()
 
